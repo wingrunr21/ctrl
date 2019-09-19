@@ -246,7 +246,8 @@ while True:
             # then we will use the whole list
             nucleus = len(pruned_list)
             
-          pruned_list = pruned_list[:nucleus]  
+          pruned_list = pruned_list[:nucleus]
+          
           # if you want to disallow more complex tokens, you can do so here
           # for instance, if you want to disallow anything with the phrase `http`,
           # you can delete theme from the pruned_list
