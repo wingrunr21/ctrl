@@ -85,10 +85,10 @@ class TiedEmbeddingSoftmax(tf.keras.layers.Layer):
 
   def __init__(self, vocab_size=vocab_size, embedding_size=embedding_dim, **kwargs):
     super(TiedEmbeddingSoftmax, self).__init__()
-    self.w = self.add_weight(name='w', shape=(vocab_size, embedding_size),
+    self.w = self.add_weight(name='w', shape=(vocab_size, embedding_size), dtype=tf.float32,
                              initializer='random_normal',
                              trainable=True)
-    self.b = self.add_weight(name='b', shape=(vocab_size,),
+    self.b = self.add_weight(name='b', shape=(vocab_size,), dtype=tf.float32,
                              initializer='zeros',
                              trainable=True)
 
