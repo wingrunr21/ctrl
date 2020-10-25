@@ -140,6 +140,19 @@ optimizer = tf.contrib.estimator.clip_gradients_by_norm(
 model.compile(optimizer=optimizer, loss=loss)
 print(model.summary())
 
+# embedding and softmax
+# these are fp32
+model.layers[1].trainable_variables[0].assign(tf.cast(reader.get_tensor('w'), tf.float32))
+model.layers[1].trainable_variables[1].assign(tf.cast(reader.get_tensor('b'), tf.float32))
+
+# encoder weights
+for _ in range(len(model.layers[2].trainable_weights)):
+    tensor = model.layers[2].trainable_weights[_]
+    if 'normalization' in tensor.name[:-2]: # layernorm is fp32
+      tensor.assign(tf.cast(reader.get_tensor(tensor.name[:-2]), tf.float32))
+    else: # everything else is fp16
+      tensor.assign(tf.cast(reader.get_tensor(tensor.name[:-2]), tf.float16))
+
 
 # IMPORTANT
 # this is where the saved model is presented to the code
