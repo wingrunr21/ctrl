@@ -17,6 +17,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import embedding_ops
 import fastBPE
 import platform
+from pathlib import Path
 
 use_py3 = platform.python_version()[0] == '3'
 
@@ -158,7 +159,16 @@ for _ in range(len(model.layers[2].trainable_weights)):
     else: # everything else is fp16
       tensor.assign(tf.cast(reader.get_tensor(tensor.name[:-2]), tf.float16))
 
+# this converts the Keras model to a TensorFlow estimator
+# this step is critical
+# remember to patch the TF 1.14 file before running the code, else you're going to see errors here
+
+run_config = tf.contrib.tpu.RunConfig(
+        session_config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True),
+        tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=100, num_cores_per_replica=1, input_partition_dims=[[1, 1], [1, 1]], per_host_input_for_training=3))
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-model.train(input_fn=input_fn, steps=args.iterations)
+model_dir = Path(args.model_path).parent
+estimator_model = tf.keras.estimator.model_to_estimator(keras_model=model, config=run_config, model_dir=model_dir)
+estimator_model.train(input_fn=input_fn, steps=args.iterations)
