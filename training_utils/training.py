@@ -12,6 +12,7 @@ import pdb
 import re
 from collections import Counter
 from tensorflow.python import debug as tf_debug
+from tensorflow.python import pywrap_tensorflow
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import embedding_ops
 import fastBPE
@@ -20,8 +21,8 @@ import platform
 use_py3 = platform.python_version()[0] == '3'
 
 parser = argparse.ArgumentParser(description='TensorFlow code for generating from CTRL')
-parser.add_argument('--model_dir', type=str, required=True,
-                                        help='location of model checkpoint')
+parser.add_argument('--model_path', type=str, required=True,
+                                        help='location of model *data* checkpoint; this is NOT the directory but rather the model checkpoint')
 parser.add_argument('--seed', type=int, default=1337,
                                         help='random seed for TensorFlow, numpy and PythonHash')
 parser.add_argument('--sequence_len', type=int, default=256,
@@ -140,6 +141,10 @@ optimizer = tf.contrib.estimator.clip_gradients_by_norm(
 model.compile(optimizer=optimizer, loss=loss)
 print(model.summary())
 
+# Load the model file
+chkpt_for_reader = '.'.join(args.model_path.split('.')[:-1])
+reader = pywrap_tensorflow.NewCheckpointReader(chkpt_for_reader)
+
 # embedding and softmax
 # these are fp32
 model.layers[1].trainable_variables[0].assign(tf.cast(reader.get_tensor('w'), tf.float32))
@@ -153,25 +158,7 @@ for _ in range(len(model.layers[2].trainable_weights)):
     else: # everything else is fp16
       tensor.assign(tf.cast(reader.get_tensor(tensor.name[:-2]), tf.float16))
 
-
-# IMPORTANT
-# this is where the saved model is presented to the code
-# the model directory should have the model checkpoint and
-# a checkpoint file
-run_config = tf.contrib.tpu.RunConfig(
-        model_dir=args.model_dir)
-
-
-# this converts the Keras model to a TensorFlow estimator
-# this step is critical
-# remember to patch the TF 1.14 file before running the code, else you're going to see errors here
-
-run_config = tf.contrib.tpu.RunConfig(
-        model_dir=args.model_dir,
-        session_config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True),
-        tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=100, num_cores_per_replica=1, input_partition_dims=[[1, 1], [1, 1]], per_host_input_for_training=3))
 tf.logging.set_verbosity(tf.logging.INFO)
 
-estimator_model = tf.keras.estimator.model_to_estimator(keras_model=model, config=run_config)
 
 estimator_model.train(input_fn=input_fn, steps=args.iterations)
