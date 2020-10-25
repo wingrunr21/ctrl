@@ -161,4 +161,4 @@ for _ in range(len(model.layers[2].trainable_weights)):
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-estimator_model.train(input_fn=input_fn, steps=args.iterations)
+model.train(input_fn=input_fn, steps=args.iterations)
