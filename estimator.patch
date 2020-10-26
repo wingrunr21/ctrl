@@ -19,6 +19,6 @@
 <                                       config=config,
 <                                       warm_start_from=warm_start_path)
 ---
->   estimator = tf.contrib.tpu.TPUEstimator(keras_model_fn, use_tpu=False, train_batch_size=2, eval_batch_size=2,
+>   estimator = tf.contrib.tpu.TPUEstimator(keras_model_fn, use_tpu=False, train_batch_size=1, eval_batch_size=1,
 >                                           config=config,
 >                                           warm_start_from=warm_start_path)
