@@ -160,6 +160,13 @@ run_config = tf.contrib.tpu.RunConfig(
 tf.logging.set_verbosity(tf.logging.INFO)
 tf.debugging.set_log_device_placement(True)
 
+# See if this helps with RAM usage
+# per https://stackoverflow.com/questions/61188185/how-to-free-memory-in-colab
+import gc
+class GarbageCollectorCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        gc.collect()
+
 estimator_model = tf.keras.estimator.model_to_estimator(keras_model=model, config=run_config)
 
 estimator_model.train(input_fn=input_fn, steps=args.iterations)
