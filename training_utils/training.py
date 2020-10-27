@@ -158,6 +158,7 @@ run_config = tf.contrib.tpu.RunConfig(
         session_config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True),
         tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=100, num_cores_per_replica=1, input_partition_dims=[[1, 1], [1, 1]], per_host_input_for_training=3))
 tf.logging.set_verbosity(tf.logging.INFO)
+tf.debugging.set_log_device_placement(True)
 
 estimator_model = tf.keras.estimator.model_to_estimator(keras_model=model, config=run_config)
 
