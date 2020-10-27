@@ -17,6 +17,9 @@ from tensorflow.python.ops import embedding_ops
 import fastBPE
 import platform
 
+tf.logging.set_verbosity(tf.logging.INFO)
+tf.debugging.set_log_device_placement(True)
+
 use_py3 = platform.python_version()[0] == '3'
 
 parser = argparse.ArgumentParser(description='TensorFlow code for generating from CTRL')
@@ -157,8 +160,6 @@ run_config = tf.contrib.tpu.RunConfig(
         model_dir=args.model_dir,
         session_config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=True),
         tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=100, num_cores_per_replica=1, input_partition_dims=[[1, 1], [1, 1]], per_host_input_for_training=3))
-tf.logging.set_verbosity(tf.logging.INFO)
-tf.debugging.set_log_device_placement(True)
 
 # See if this helps with RAM usage
 # per https://stackoverflow.com/questions/61188185/how-to-free-memory-in-colab
